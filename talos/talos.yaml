@@ -1,0 +1,22 @@
+arch: amd64
+platform: nocloud
+secureboot: false
+version: 1.7.5
+customization:
+  extraKernelArgs:
+    - net.ifnames=0
+input:
+  kernel:
+    path: /usr/install/amd64/vmlinuz
+  initramfs:
+    path: /usr/install/amd64/initramfs.xz
+  baseInstaller:
+    imageRef: ghcr.io/siderolabs/installer:v1.7.5 # https://github.com/siderolabs/talos/pkgs/container/installer
+  systemExtensions:
+    - imageRef: ghcr.io/siderolabs/qemu-guest-agent:8.2.2 # https://github.com/siderolabs/extensions/pkgs/container/qemu-guest-agent
+output:
+  kind: image
+  imageOptions:
+    diskSize: 2147483648
+    diskFormat: raw
+  outFormat: raw

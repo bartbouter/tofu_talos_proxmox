@@ -1,0 +1,68 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: whoami
+  labels:
+    app: whoami
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: whoami
+  template:
+    metadata:
+      labels:
+        app: whoami
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
+        runAsNonRoot: true
+      containers:
+        - name: whoami
+          image: traefik/whoami:latest
+          args: ["--port=8080"]
+          ports:
+            - name: web
+              containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: "RuntimeDefault"
+            capabilities:
+              drop:
+                - ALL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: whoami
+  labels:
+    app: whoami
+spec:
+  ports:
+    - name: web
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: whoami
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: whoami-ingress
+  labels:
+    app: whoami
+spec:
+  rules:
+    - host: whoami.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: whoami
+                port:
+                  name: web
